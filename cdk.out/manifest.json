@@ -1,0 +1,180 @@
+{
+  "version": "36.0.0",
+  "artifacts": {
+    "InfraStack.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "InfraStack.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "InfraStack": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/us-east-1",
+      "properties": {
+        "templateFile": "InfraStack.template.json",
+        "terminationProtection": false,
+        "tags": {
+          "environment": "prod",
+          "project": "cuper-mobile"
+        },
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-us-east-1",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-us-east-1",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1/bbb41c830f8310ce18f81e56bc210512c309b97b540d05c0237d6309bd099093.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "InfraStack.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-us-east-1",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "InfraStack.assets"
+      ],
+      "metadata": {
+        "/InfraStack": [
+          {
+            "type": "aws:cdk:stack-tags",
+            "data": [
+              {
+                "Key": "environment",
+                "Value": "prod"
+              },
+              {
+                "Key": "project",
+                "Value": "cuper-mobile"
+              }
+            ]
+          }
+        ],
+        "/InfraStack/DevPipeline/ArtifactsBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineArtifactsBucketEA21B1AE"
+          }
+        ],
+        "/InfraStack/DevPipeline/ArtifactsBucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineArtifactsBucketPolicyC42DA2AC"
+          }
+        ],
+        "/InfraStack/DevPipeline/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineRoleE5AF1AA2"
+          }
+        ],
+        "/InfraStack/DevPipeline/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineRoleDefaultPolicyCD8772B2"
+          }
+        ],
+        "/InfraStack/DevPipeline/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipeline90F20C86"
+          }
+        ],
+        "/InfraStack/DevPipeline/Source/CodeCommit/CodePipelineActionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineSourceCodeCommitCodePipelineActionRoleED678F34"
+          }
+        ],
+        "/InfraStack/DevPipeline/Source/CodeCommit/CodePipelineActionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineSourceCodeCommitCodePipelineActionRoleDefaultPolicy3A274465"
+          }
+        ],
+        "/InfraStack/DevPipeline/EventsRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineEventsRoleDAC41914"
+          }
+        ],
+        "/InfraStack/DevPipeline/EventsRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineEventsRoleDefaultPolicyEDD60F27"
+          }
+        ],
+        "/InfraStack/DevPipeline/Build/AndroidBuild/CodePipelineActionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineBuildAndroidBuildCodePipelineActionRoleF96DDC8F"
+          }
+        ],
+        "/InfraStack/DevPipeline/Build/AndroidBuild/CodePipelineActionRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "DevPipelineBuildAndroidBuildCodePipelineActionRoleDefaultPolicy91129F6D"
+          }
+        ],
+        "/InfraStack/Repo/InfraStackDevPipelineD830443E-main-EventRule/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RepoInfraStackDevPipelineD830443EmainEventRule8B5B4E30"
+          }
+        ],
+        "/InfraStack/EnvironmentVariablesSecret/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "EnvironmentVariablesSecretC16D9AC5"
+          }
+        ],
+        "/InfraStack/AppCodeBuild/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AppCodeBuildRole60D5E1D9"
+          }
+        ],
+        "/InfraStack/AppCodeBuild/Role/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AppCodeBuildRoleDefaultPolicyF3E668DB"
+          }
+        ],
+        "/InfraStack/AppCodeBuild/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "AppCodeBuildE879AB66"
+          }
+        ],
+        "/InfraStack/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/InfraStack/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/InfraStack/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "InfraStack"
+    },
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    }
+  }
+}

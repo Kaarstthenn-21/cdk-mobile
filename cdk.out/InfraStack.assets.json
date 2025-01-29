@@ -1,0 +1,34 @@
+{
+  "version": "36.0.0",
+  "files": {
+    "bbb41c830f8310ce18f81e56bc210512c309b97b540d05c0237d6309bd099093": {
+      "source": {
+        "path": "InfraStack.template.json",
+        "packaging": "file"
+      },
+      "destinations": {
+        "current_account-us-east-1": {
+          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1",
+          "objectKey": "bbb41c830f8310ce18f81e56bc210512c309b97b540d05c0237d6309bd099093.json",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    }
+  },
+  "dockerImages": {
+    "reciclaje-apk-builder-06b096c89cf039e06fe308e4b884bde1381c105b17af0ebdbc65a883d16775f9": {
+      "source": {
+        "directory": "asset.06b096c89cf039e06fe308e4b884bde1381c105b17af0ebdbc65a883d16775f9"
+      },
+      "destinations": {
+        "current_account-us-east-1": {
+          "repositoryName": "cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1",
+          "imageTag": "06b096c89cf039e06fe308e4b884bde1381c105b17af0ebdbc65a883d16775f9",
+          "region": "us-east-1",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-image-publishing-role-${AWS::AccountId}-us-east-1"
+        }
+      }
+    }
+  }
+}

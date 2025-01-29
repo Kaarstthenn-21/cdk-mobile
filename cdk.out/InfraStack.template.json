@@ -1,0 +1,961 @@
+{
+ "Resources": {
+  "DevPipelineArtifactsBucketEA21B1AE": {
+   "Type": "AWS::S3::Bucket",
+   "Properties": {
+    "BucketEncryption": {
+     "ServerSideEncryptionConfiguration": [
+      {
+       "ServerSideEncryptionByDefault": {
+        "SSEAlgorithm": "aws:kms"
+       }
+      }
+     ]
+    },
+    "PublicAccessBlockConfiguration": {
+     "BlockPublicAcls": true,
+     "BlockPublicPolicy": true,
+     "IgnorePublicAcls": true,
+     "RestrictPublicBuckets": true
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/ArtifactsBucket/Resource"
+   }
+  },
+  "DevPipelineArtifactsBucketPolicyC42DA2AC": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "DevPipelineArtifactsBucketEA21B1AE"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DevPipelineArtifactsBucketEA21B1AE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DevPipelineArtifactsBucketEA21B1AE",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/ArtifactsBucket/Policy/Resource"
+   }
+  },
+  "DevPipelineRoleE5AF1AA2": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Role/Resource"
+   }
+  },
+  "DevPipelineRoleDefaultPolicyCD8772B2": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DevPipelineArtifactsBucketEA21B1AE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DevPipelineArtifactsBucketEA21B1AE",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DevPipelineBuildAndroidBuildCodePipelineActionRoleF96DDC8F",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::GetAtt": [
+          "DevPipelineSourceCodeCommitCodePipelineActionRoleED678F34",
+          "Arn"
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DevPipelineRoleDefaultPolicyCD8772B2",
+    "Roles": [
+     {
+      "Ref": "DevPipelineRoleE5AF1AA2"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Role/DefaultPolicy/Resource"
+   }
+  },
+  "DevPipeline90F20C86": {
+   "Type": "AWS::CodePipeline::Pipeline",
+   "Properties": {
+    "ArtifactStore": {
+     "Location": {
+      "Ref": "DevPipelineArtifactsBucketEA21B1AE"
+     },
+     "Type": "S3"
+    },
+    "PipelineType": "V2",
+    "RestartExecutionOnUpdate": true,
+    "RoleArn": {
+     "Fn::GetAtt": [
+      "DevPipelineRoleE5AF1AA2",
+      "Arn"
+     ]
+    },
+    "Stages": [
+     {
+      "Actions": [
+       {
+        "ActionTypeId": {
+         "Category": "Source",
+         "Owner": "AWS",
+         "Provider": "CodeCommit",
+         "Version": "1"
+        },
+        "Configuration": {
+         "RepositoryName": "cuper-mobile-reciclaje",
+         "BranchName": "main",
+         "PollForSourceChanges": false
+        },
+        "Name": "CodeCommit",
+        "OutputArtifacts": [
+         {
+          "Name": "Artifact_Source_CodeCommit"
+         }
+        ],
+        "RoleArn": {
+         "Fn::GetAtt": [
+          "DevPipelineSourceCodeCommitCodePipelineActionRoleED678F34",
+          "Arn"
+         ]
+        },
+        "RunOrder": 1
+       }
+      ],
+      "Name": "Source"
+     },
+     {
+      "Actions": [
+       {
+        "ActionTypeId": {
+         "Category": "Build",
+         "Owner": "AWS",
+         "Provider": "CodeBuild",
+         "Version": "1"
+        },
+        "Configuration": {
+         "ProjectName": {
+          "Ref": "AppCodeBuildE879AB66"
+         }
+        },
+        "InputArtifacts": [
+         {
+          "Name": "Artifact_Source_CodeCommit"
+         }
+        ],
+        "Name": "AndroidBuild",
+        "OutputArtifacts": [
+         {
+          "Name": "Artifact_Build_AndroidBuild"
+         }
+        ],
+        "RoleArn": {
+         "Fn::GetAtt": [
+          "DevPipelineBuildAndroidBuildCodePipelineActionRoleF96DDC8F",
+          "Arn"
+         ]
+        },
+        "RunOrder": 1
+       }
+      ],
+      "Name": "Build"
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "DependsOn": [
+    "DevPipelineRoleDefaultPolicyCD8772B2",
+    "DevPipelineRoleE5AF1AA2"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Resource"
+   }
+  },
+  "DevPipelineSourceCodeCommitCodePipelineActionRoleED678F34": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:iam::",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":root"
+          ]
+         ]
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Source/CodeCommit/CodePipelineActionRole/Resource"
+   }
+  },
+  "DevPipelineSourceCodeCommitCodePipelineActionRoleDefaultPolicy3A274465": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DevPipelineArtifactsBucketEA21B1AE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DevPipelineArtifactsBucketEA21B1AE",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "codecommit:CancelUploadArchive",
+        "codecommit:GetBranch",
+        "codecommit:GetCommit",
+        "codecommit:GetUploadArchiveStatus",
+        "codecommit:UploadArchive"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:aws:codecommit:us-east-1:",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":cuper-mobile-reciclaje"
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DevPipelineSourceCodeCommitCodePipelineActionRoleDefaultPolicy3A274465",
+    "Roles": [
+     {
+      "Ref": "DevPipelineSourceCodeCommitCodePipelineActionRoleED678F34"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Source/CodeCommit/CodePipelineActionRole/DefaultPolicy/Resource"
+   }
+  },
+  "DevPipelineEventsRoleDAC41914": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "events.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/EventsRole/Resource"
+   }
+  },
+  "DevPipelineEventsRoleDefaultPolicyEDD60F27": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "codepipeline:StartPipelineExecution",
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:aws:codepipeline:us-east-1:",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":",
+          {
+           "Ref": "DevPipeline90F20C86"
+          }
+         ]
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DevPipelineEventsRoleDefaultPolicyEDD60F27",
+    "Roles": [
+     {
+      "Ref": "DevPipelineEventsRoleDAC41914"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/EventsRole/DefaultPolicy/Resource"
+   }
+  },
+  "DevPipelineBuildAndroidBuildCodePipelineActionRoleF96DDC8F": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "AWS": {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:iam::",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":root"
+          ]
+         ]
+        }
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Build/AndroidBuild/CodePipelineActionRole/Resource"
+   }
+  },
+  "DevPipelineBuildAndroidBuildCodePipelineActionRoleDefaultPolicy91129F6D": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild",
+        "codebuild:StopBuild"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::GetAtt": [
+         "AppCodeBuildE879AB66",
+         "Arn"
+        ]
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "DevPipelineBuildAndroidBuildCodePipelineActionRoleDefaultPolicy91129F6D",
+    "Roles": [
+     {
+      "Ref": "DevPipelineBuildAndroidBuildCodePipelineActionRoleF96DDC8F"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/DevPipeline/Build/AndroidBuild/CodePipelineActionRole/DefaultPolicy/Resource"
+   }
+  },
+  "RepoInfraStackDevPipelineD830443EmainEventRule8B5B4E30": {
+   "Type": "AWS::Events::Rule",
+   "Properties": {
+    "EventPattern": {
+     "source": [
+      "aws.codecommit"
+     ],
+     "resources": [
+      {
+       "Fn::Join": [
+        "",
+        [
+         "arn:aws:codecommit:us-east-1:",
+         {
+          "Ref": "AWS::AccountId"
+         },
+         ":cuper-mobile-reciclaje"
+        ]
+       ]
+      }
+     ],
+     "detail-type": [
+      "CodeCommit Repository State Change"
+     ],
+     "detail": {
+      "event": [
+       "referenceCreated",
+       "referenceUpdated"
+      ],
+      "referenceName": [
+       "main"
+      ]
+     }
+    },
+    "State": "ENABLED",
+    "Targets": [
+     {
+      "Arn": {
+       "Fn::Join": [
+        "",
+        [
+         "arn:aws:codepipeline:us-east-1:",
+         {
+          "Ref": "AWS::AccountId"
+         },
+         ":",
+         {
+          "Ref": "DevPipeline90F20C86"
+         }
+        ]
+       ]
+      },
+      "Id": "Target0",
+      "RoleArn": {
+       "Fn::GetAtt": [
+        "DevPipelineEventsRoleDAC41914",
+        "Arn"
+       ]
+      }
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/Repo/InfraStackDevPipelineD830443E-main-EventRule/Resource"
+   }
+  },
+  "EnvironmentVariablesSecretC16D9AC5": {
+   "Type": "AWS::SecretsManager::Secret",
+   "Properties": {
+    "GenerateSecretString": {},
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/EnvironmentVariablesSecret/Resource"
+   }
+  },
+  "AppCodeBuildRole60D5E1D9": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "codebuild.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/AdministratorAccess"
+       ]
+      ]
+     }
+    ],
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/AppCodeBuild/Role/Resource"
+   }
+  },
+  "AppCodeBuildRoleDefaultPolicyF3E668DB": {
+   "Type": "AWS::IAM::Policy",
+   "Properties": {
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:aws:ecr:us-east-1:",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":repository/",
+          {
+           "Fn::Sub": "cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1"
+          }
+         ]
+        ]
+       }
+      },
+      {
+       "Action": "ecr:GetAuthorizationToken",
+       "Effect": "Allow",
+       "Resource": "*"
+      },
+      {
+       "Action": "secretsmanager:GetSecretValue",
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "EnvironmentVariablesSecretC16D9AC5"
+       }
+      },
+      {
+       "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:logs:us-east-1:",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":log-group:/aws/codebuild/",
+           {
+            "Ref": "AppCodeBuildE879AB66"
+           },
+           ":*"
+          ]
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           "arn:aws:logs:us-east-1:",
+           {
+            "Ref": "AWS::AccountId"
+           },
+           ":log-group:/aws/codebuild/",
+           {
+            "Ref": "AppCodeBuildE879AB66"
+           }
+          ]
+         ]
+        }
+       ]
+      },
+      {
+       "Action": [
+        "codebuild:BatchPutCodeCoverages",
+        "codebuild:BatchPutTestCases",
+        "codebuild:CreateReport",
+        "codebuild:CreateReportGroup",
+        "codebuild:UpdateReport"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Fn::Join": [
+         "",
+         [
+          "arn:aws:codebuild:us-east-1:",
+          {
+           "Ref": "AWS::AccountId"
+          },
+          ":report-group/",
+          {
+           "Ref": "AppCodeBuildE879AB66"
+          },
+          "-*"
+         ]
+        ]
+       }
+      },
+      {
+       "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+       ],
+       "Effect": "Allow",
+       "Resource": {
+        "Ref": "EnvironmentVariablesSecretC16D9AC5"
+       }
+      },
+      {
+       "Action": [
+        "s3:Abort*",
+        "s3:DeleteObject*",
+        "s3:GetBucket*",
+        "s3:GetObject*",
+        "s3:List*",
+        "s3:PutObject",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "s3:PutObjectTagging",
+        "s3:PutObjectVersionTagging"
+       ],
+       "Effect": "Allow",
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "DevPipelineArtifactsBucketEA21B1AE",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "DevPipelineArtifactsBucketEA21B1AE",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "PolicyName": "AppCodeBuildRoleDefaultPolicyF3E668DB",
+    "Roles": [
+     {
+      "Ref": "AppCodeBuildRole60D5E1D9"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/AppCodeBuild/Role/DefaultPolicy/Resource"
+   }
+  },
+  "AppCodeBuildE879AB66": {
+   "Type": "AWS::CodeBuild::Project",
+   "Properties": {
+    "Artifacts": {
+     "Type": "CODEPIPELINE"
+    },
+    "Cache": {
+     "Type": "NO_CACHE"
+    },
+    "EncryptionKey": "alias/aws/s3",
+    "Environment": {
+     "ComputeType": "BUILD_GENERAL1_MEDIUM",
+     "EnvironmentVariables": [
+      {
+       "Name": "S3BUCKET",
+       "Type": "PLAINTEXT",
+       "Value": {
+        "Ref": "DevPipelineArtifactsBucketEA21B1AE"
+       }
+      },
+      {
+       "Name": "SECRETS",
+       "Type": "SECRETS_MANAGER",
+       "Value": {
+        "Ref": "EnvironmentVariablesSecretC16D9AC5"
+       }
+      }
+     ],
+     "Image": {
+      "Fn::Sub": "${AWS::AccountId}.dkr.ecr.us-east-1.${AWS::URLSuffix}/cdk-hnb659fds-container-assets-${AWS::AccountId}-us-east-1:06b096c89cf039e06fe308e4b884bde1381c105b17af0ebdbc65a883d16775f9"
+     },
+     "ImagePullCredentialsType": "SERVICE_ROLE",
+     "PrivilegedMode": false,
+     "Type": "LINUX_CONTAINER"
+    },
+    "ServiceRole": {
+     "Fn::GetAtt": [
+      "AppCodeBuildRole60D5E1D9",
+      "Arn"
+     ]
+    },
+    "Source": {
+     "BuildSpec": "version: \"0.2\"\nphases:\n  install:\n    commands:\n      - echo Installing flutter dependencies\n      - pwd\n      - curl \"https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip\" -o \"awscliv2.zip\"\n      - unzip awscliv2.zip\n      - ./aws/install\n      - cd codigo/reciclaje\n      - flutter pub get\n  build:\n    commands:\n      - echo Building flutter App\n      - flutter build apk --release\n  post_build:\n    commands:\n      - ls\n      - cd build/app/outputs/flutter-apk\n      - KEY=\"build/$(date +'%Y%m%d-%H%M')-app-release.apk\"\n      - aws s3 cp app-release.apk s3://$S3BUCKET/$KEY\n      - SIGNED_URL=$(aws s3 presign s3://$S3BUCKET/$KEY --expires-in 604800)\nartifacts:\n  files:\n    - codigo/reciclaje/build/app/outputs/flutter-apk/app-release.apk\n  discard-paths: \"yes\"\n",
+     "Type": "CODEPIPELINE"
+    },
+    "Tags": [
+     {
+      "Key": "environment",
+      "Value": "prod"
+     },
+     {
+      "Key": "project",
+      "Value": "cuper-mobile"
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/AppCodeBuild/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/0WPTW6DMBCFz5K9mZZQqeum3XSHzAEix0zRgLGRx04UWb57hSFi9b558zQ/Z6g/PqE5qQdXup8qQzdIXVB6EurB16RdjwstaMgipHYn8f1nX5wFN5AuUU8YVn+nTVpnSD8Pe6uzIDVDks6USUWP5CuDd7SBIcm4x6LBLFD7q2LGwPDj9IT+d1YDfq3O2gOJi2MKzj8vilEwao+BZ2XVgB5SV+p13EZZrB/eIpn+eK/1bkRdUjvmLCSyi16jKLu6oAayQ7lrb2RhXY8w8tv9/A51A/VpZKLKRxtoRpCb/gNVuTPGcgEAAA=="
+   },
+   "Metadata": {
+    "aws:cdk:path": "InfraStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
